@@ -27,6 +27,9 @@
             <button id="githubBtn" text="msg://githubBtn.text" width="100%" icon="app-icons:github"
                     disableOnClick="true"
                     classNames="github-style, other-login-button"/>
+            <button id="yandexBtn" text="msg://yandexBtn.text" width="100%" icon="app-icons:yandex"
+                    disableOnClick="true"
+                    classNames="yandex-style, other-login-button"/>
         </vbox>
     </layout>
 </view>

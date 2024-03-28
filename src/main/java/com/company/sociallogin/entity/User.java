@@ -62,6 +62,9 @@ public class User extends OidcUserEntity implements JmixUserDetails, HasTimeZone
     @Column(name = "GITHUB_ID")
     private Integer githubId;
 
+    @Column(name = "YANDEX_ID")
+    private String yandexId;
+
     @Override
     public String getName() {
         return username;
@@ -69,6 +72,14 @@ public class User extends OidcUserEntity implements JmixUserDetails, HasTimeZone
 
     @Transient
     protected Collection<? extends GrantedAuthority> authorities;
+
+    public String getYandexId() {
+        return yandexId;
+    }
+
+    public void setYandexId(String yandexId) {
+        this.yandexId = yandexId;
+    }
 
     public Integer getGithubId() {
         return githubId;

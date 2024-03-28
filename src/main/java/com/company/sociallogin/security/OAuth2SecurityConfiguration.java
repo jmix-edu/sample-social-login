@@ -68,21 +68,49 @@ public class OAuth2SecurityConfiguration extends FlowuiSecurityConfiguration {
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
         DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
         return (userRequest) -> {
-            // Delegate to the default implementation for loading a user
-            OAuth2User oAuth2User = delegate.loadUser(userRequest);
-
-            Integer githubId = oAuth2User.getAttribute("id");
-
-            //find or create user with given GitHub id
-            User jmixUser = oidcUserPersistence.loadUserByGithubId(githubId);
-            jmixUser.setUsername(oAuth2User.getName());
-            jmixUser.setGithubId(githubId);
-            jmixUser.setEmail(oAuth2User.getAttribute("email"));
-
-            User savedJmixUser = oidcUserPersistence.saveUser(jmixUser);
-            savedJmixUser.setAuthorities(getDefaultGrantedAuthorities());
-            return savedJmixUser;
+            String clientName = userRequest.getClientRegistration().getClientName();
+            switch (clientName) {
+                case "GitHub" -> {
+                    return githubToUserService(userRequest, delegate);
+                }
+                case "Yandex" -> {
+                    return yandexToService(userRequest, delegate);
+                }
+                default -> throw new IllegalStateException("Unsupported client");
+            }
         };
+    }
+
+    private User githubToUserService(OAuth2UserRequest userRequest, DefaultOAuth2UserService delegate) {
+        // Delegate to the default implementation for loading a user
+        OAuth2User oAuth2User = delegate.loadUser(userRequest);
+
+        Integer githubId = oAuth2User.getAttribute("id");
+
+        //find or create user with given GitHub id
+        User jmixUser = oidcUserPersistence.loadUserByGithubId(githubId);
+        jmixUser.setUsername(oAuth2User.getName());
+        jmixUser.setGithubId(githubId);
+        jmixUser.setEmail(oAuth2User.getAttribute("email"));
+
+        User savedJmixUser = oidcUserPersistence.saveUser(jmixUser);
+        savedJmixUser.setAuthorities(getDefaultGrantedAuthorities());
+        return savedJmixUser;
+    }
+
+    private User yandexToService(OAuth2UserRequest userRequest, DefaultOAuth2UserService delegate) {
+        // Delegate to the default implementation for loading a user
+        OAuth2User oAuth2User = delegate.loadUser(userRequest);
+        String yandexId = oAuth2User.getAttribute("id");
+
+        User jmixUser = oidcUserPersistence.loadUserByYandexId(yandexId);
+        jmixUser.setUsername(yandexId);
+        jmixUser.setGoogleId(yandexId);
+        jmixUser.setEmail(oAuth2User.getAttribute("email"));
+
+        User savedJmixUser = oidcUserPersistence.saveUser(jmixUser);
+        savedJmixUser.setAuthorities(getDefaultGrantedAuthorities());
+        return savedJmixUser;
     }
 
     /**

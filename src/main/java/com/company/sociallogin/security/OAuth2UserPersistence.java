@@ -39,6 +39,19 @@ public class OAuth2UserPersistence {
     }
 
     @Authenticated
+    public User loadUserByYandexId(String yandexId) {
+        return dataManager.load(User.class)
+                .query("select u from User u where u.yandexId = :yandexId")
+                .parameter("yandexId", yandexId)
+                .optional()
+                .orElseGet(() -> {
+                    User user = dataManager.create(User.class);
+                    user.setYandexId(yandexId);
+                    return user;
+                });
+    }
+
+    @Authenticated
     public User saveUser(User user) {
         return dataManager.save(user);
     }
