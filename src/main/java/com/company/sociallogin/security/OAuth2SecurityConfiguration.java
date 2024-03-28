@@ -71,9 +71,17 @@ public class OAuth2SecurityConfiguration extends FlowuiSecurityConfiguration {
             // Delegate to the default implementation for loading a user
             OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
-            // todo implement
+            Integer githubId = oAuth2User.getAttribute("id");
 
-            return oAuth2User;
+            //find or create user with given GitHub id
+            User jmixUser = oidcUserPersistence.loadUserByGithubId(githubId);
+            jmixUser.setUsername(oAuth2User.getName());
+            jmixUser.setGithubId(githubId);
+            jmixUser.setEmail(oAuth2User.getAttribute("email"));
+
+            User savedJmixUser = oidcUserPersistence.saveUser(jmixUser);
+            savedJmixUser.setAuthorities(getDefaultGrantedAuthorities());
+            return savedJmixUser;
         };
     }
 
@@ -86,9 +94,16 @@ public class OAuth2SecurityConfiguration extends FlowuiSecurityConfiguration {
             // Delegate to the default implementation for loading a user
             OidcUser oidcUser = delegate.loadUser(userRequest);
 
-            // todo implement
+            //find or create user with given Google id
+            String googleId = oidcUser.getSubject();
+            User jmixUser = oidcUserPersistence.loadUserByGoogleId(googleId);
+            jmixUser.setUsername(googleId);
+            jmixUser.setGoogleId(googleId);
+            jmixUser.setEmail(oidcUser.getEmail());
 
-            return oidcUser;
+            User savedJmixUser = oidcUserPersistence.saveUser(jmixUser);
+            savedJmixUser.setAuthorities(getDefaultGrantedAuthorities());
+            return savedJmixUser;
         };
     }
 
